@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2b1810">
+    <title>KIM - Kesenian Irama Minang</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Overlay: minta user memutar HP ke landscape -->
+    <div id="rotateOverlay" class="rotate-overlay" aria-hidden="true">
+        <div class="rotate-content">
+            <div class="rotate-icon">
+                <svg viewBox="0 0 64 64" width="80" height="80" aria-hidden="true">
+                    <rect x="14" y="6" width="36" height="52" rx="6" ry="6" fill="none" stroke="#ffd76b" stroke-width="3"/>
+                    <circle cx="32" cy="52" r="2" fill="#ffd76b"/>
+                    <path d="M 6 32 A 26 26 0 0 1 26 8" fill="none" stroke="#ffd76b" stroke-width="2.5" stroke-linecap="round"/>
+                    <polygon points="6,32 12,29 12,35" fill="#ffd76b"/>
+                </svg>
+            </div>
+            <h2>Putar Perangkat ke Landscape</h2>
+            <p>Aplikasi KIM dirancang untuk layar landscape.<br>Silakan miringkan perangkat Anda.</p>
+        </div>
+    </div>
+
+    <div id="app">
+        <!-- Halaman Undian (default) -->
+        <main id="page-game" class="page active">
+            <div id="drawerBackdrop" class="drawer-backdrop" aria-hidden="true"></div>
+            <div class="game-container">
+                <!-- Panel Kiri -->
+                <aside class="panel-left">
+                    <div class="brand">
+                        <div class="brand-logo">
+                            <div class="brand-circle" id="brandCircle">
+                                <span class="brand-text">KIM</span>
+                            </div>
+                        </div>
+                        <div class="brand-title" id="brandTitle">Kesenian Irama Minang</div>
+                    </div>
+
+                    <div class="number-display" id="numberDisplay">
+                        <div class="number-ball-big" id="bigBall">
+                            <span id="currentNumber">KIM</span>
+                        </div>
+                    </div>
+
+                    <div class="history-section">
+                        <div class="history-label">Riwayat</div>
+                        <div class="history-list" id="historyList">
+                            <span class="history-empty">Belum ada angka</span>
+                        </div>
+                    </div>
+
+                    <div class="controls">
+                        <button id="btnDraw" class="btn btn-primary">
+                            <span class="btn-icon">🎲</span>
+                            <span class="btn-label">Undi Otomatis</span>
+                        </button>
+                        <button id="btnManual" class="btn btn-secondary">
+                            <span class="btn-icon">⌨</span>
+                            <span class="btn-label">Input Manual</span>
+                        </button>
+                        <div class="controls-row">
+                            <button id="btnUndo" class="btn btn-small" title="Batalkan angka terakhir">
+                                <span class="btn-icon">↶</span> Undo
+                            </button>
+                            <button id="btnReset" class="btn btn-small btn-danger" title="Mulai ronde baru">
+                                <span class="btn-icon">↻</span> Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="footer-actions">
+                        <div class="color-swatches" id="colorSwatches" title="Pilih warna kupon">
+                            <button class="swatch swatch-red" data-color="merah" title="Merah"></button>
+                            <button class="swatch swatch-blue" data-color="biru" title="Biru"></button>
+                            <button class="swatch swatch-white active" data-color="putih" title="Putih"></button>
+                            <button class="swatch swatch-yellow" data-color="kuning" title="Kuning"></button>
+                            <button class="swatch swatch-green" data-color="hijau" title="Hijau"></button>
+                        </div>
+                        <button id="btnOpenPeserta" class="btn btn-link">📺 Buka Layar Peserta</button>
+                        <button id="btnMediaLib" class="btn btn-link">🖼 Media Library</button>
+                        <button id="btnGenerator" class="btn btn-link">📄 Generator Kupon</button>
+                        <button id="btnSettings" class="btn btn-link">⚙ Pengaturan</button>
+                    </div>
+                </aside>
+
+                <!-- Panel Kanan -->
+                <section class="panel-right">
+                    <header class="board-header">
+                        <button id="btnHamburger" class="hamburger" aria-label="Buka panel kontrol">
+                            <span></span><span></span><span></span>
+                        </button>
+                        <div class="kupon-label">
+                            KUPON: <span id="activeColorLabel">PUTIH</span>
+                            <span id="activeColorBadge" class="color-badge color-badge-putih" aria-hidden="true"></span>
+                        </div>
+                        <div class="header-number-mini" id="headerNumberMini" aria-hidden="true">
+                            <span id="headerNumber">—</span>
+                        </div>
+                        <div class="grid-picker">
+                            <label for="gridSelect">Grid:</label>
+                            <select id="gridSelect">
+                                <optgroup label="Standar (90)">
+                                    <option value="9x10">9 × 10 (90)</option>
+                                    <option value="10x9">10 × 9 (90)</option>
+                                    <option value="6x15">6 × 15 (90)</option>
+                                    <option value="15x6">15 × 6 (90)</option>
+                                </optgroup>
+                                <optgroup label="Kecil">
+                                    <option value="5x5">5 × 5 (25)</option>
+                                    <option value="6x6">6 × 6 (36)</option>
+                                    <option value="6x7">6 × 7 (42)</option>
+                                    <option value="7x7">7 × 7 (49)</option>
+                                    <option value="7x9">7 × 9 (63)</option>
+                                    <option value="8x8">8 × 8 (64)</option>
+                                </optgroup>
+                                <optgroup label="Lainnya">
+                                    <option value="5x18">5 × 18 (90)</option>
+                                    <option value="18x5">18 × 5 (90)</option>
+                                    <option value="custom">Custom…</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="counter">
+                            <span id="counterDrawn">0</span> / <span id="counterTotal">90</span>
+                        </div>
+                        <div class="header-quick-actions">
+                            <button id="btnQuickUndo" class="quick-btn quick-btn-neutral" title="Undo" aria-label="Undo">↶</button>
+                            <button id="btnQuickManual" class="quick-btn quick-btn-secondary" title="Input Manual" aria-label="Input Manual">⌨</button>
+                            <button id="btnQuickDraw" class="quick-btn quick-btn-primary" title="Undi Otomatis" aria-label="Undi Otomatis">🎲</button>
+                        </div>
+                        <div class="media-quick">
+                            <button id="btnQuickMedia" class="btn-icon-only" title="Tayangkan Media">📺</button>
+                            <div id="mediaPopover" class="media-popover" hidden>
+                                <div class="media-popover-header">
+                                    <span>Tayangkan Media</span>
+                                    <button id="btnMediaPopoverClose" aria-label="Tutup">×</button>
+                                </div>
+                                <div class="media-popover-list" id="mediaPopoverList"></div>
+                                <div class="media-popover-footer">
+                                    <button id="btnOpenMedia" class="btn btn-link">📚 Lihat Semua / Kelola</button>
+                                    <button id="btnMediaStop" class="btn btn-small btn-danger" hidden>■ Hentikan Tayangan</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="btnQuickSettings" class="btn-icon-only" title="Pengaturan">⚙</button>
+                        <button id="btnFullscreen" class="btn-icon-only" title="Fullscreen">⛶</button>
+                    </header>
+                    <div class="board" id="board">
+                        <!-- Angka 1-90 di-generate via JS -->
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Halaman Layar Peserta -->
+        <main id="page-peserta" class="page page-peserta">
+            <div class="peserta-bg" aria-hidden="true"></div>
+            <header class="peserta-header">
+                <div class="peserta-kupon">
+                    <span class="peserta-kupon-label">KUPON</span>
+                    <span id="pesertaColorBadge" class="color-badge color-badge-putih"></span>
+                    <span id="pesertaColorText">PUTIH</span>
+                </div>
+                <div class="peserta-brand" id="pesertaBrand">KIM · Kesenian Irama Minang</div>
+                <div class="peserta-counter">
+                    <span id="pesertaCounterDrawn">0</span> / <span id="pesertaCounterTotal">90</span>
+                </div>
+            </header>
+
+            <section class="peserta-main">
+                <div class="peserta-ball" id="pesertaBall">
+                    <span id="pesertaNumber" class="placeholder">KIM</span>
+                </div>
+                <div class="peserta-waiting" id="pesertaWaiting">
+                    Menunggu undian dimulai…
+                </div>
+            </section>
+
+            <footer class="peserta-history">
+                <span class="peserta-history-label">Riwayat:</span>
+                <div class="peserta-history-list" id="pesertaHistoryList">
+                    <span class="peserta-history-empty">—</span>
+                </div>
+            </footer>
+
+            <div class="peserta-footer-msg" id="pesertaFooterMsg" hidden></div>
+
+            <div class="peserta-flash" id="pesertaFlash" aria-hidden="true"></div>
+
+            <!-- Overlay media (gambar / video / youtube full-screen) -->
+            <div id="pesertaMediaOverlay" class="peserta-media-overlay" hidden>
+                <img id="pesertaMediaImg" alt="" hidden>
+                <video id="pesertaMediaVideo" hidden playsinline></video>
+                <iframe id="pesertaMediaIframe" hidden allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen frameborder="0"></iframe>
+                <div id="pesertaMediaError" class="peserta-media-error" hidden></div>
+            </div>
+        </main>
+
+        <!-- Halaman Media Library -->
+        <main id="page-media" class="page">
+            <div class="media-container">
+                <header class="media-header">
+                    <h1>📺 Media Library</h1>
+                    <button id="btnBackFromMedia" class="btn btn-link">← Kembali ke Permainan</button>
+                </header>
+
+                <div class="media-actions">
+                    <label for="mediaFile" class="btn btn-primary">🖼 Upload Gambar</label>
+                    <input type="file" id="mediaFile" accept="image/png,image/jpeg,image/webp" hidden multiple>
+                    <label for="mediaVideoFile" class="btn btn-primary">🎬 Upload Video</label>
+                    <input type="file" id="mediaVideoFile" accept="video/mp4,video/webm" hidden>
+                    <button id="btnMediaUrl" class="btn btn-secondary">🔗 Gambar URL</button>
+                    <button id="btnMediaYoutube" class="btn btn-secondary">▶ YouTube / Video URL</button>
+                    <span class="media-storage-info" id="mediaStorageInfo"></span>
+                </div>
+
+                <p class="media-hint">
+                    Gambar: PNG/JPG/WEBP, maks 2 MB. Video: MP4/WEBM, maks 10 MB.
+                    Video disimpan di IndexedDB. <br>
+                    <strong>Catatan URL eksternal:</strong> beberapa server (mis. file-examples.com) memblokir akses cross-origin.
+                    Untuk video, gunakan YouTube atau upload file lokal jika muncul error CORS.
+                </p>
+
+                <div class="media-grid" id="mediaGrid">
+                    <p class="media-empty">Belum ada media. Upload gambar atau tambah dari URL untuk mulai.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modal: Tambah Media dari URL -->
+        <div id="modalMediaUrl" class="modal">
+            <div class="modal-content">
+                <h2>Tambah Gambar dari URL</h2>
+                <p>Paste link gambar (jpg/png/webp). Butuh internet saat ditayangkan.</p>
+                <input type="text" id="mediaUrlInput" placeholder="https://contoh.com/gambar.jpg">
+                <input type="text" id="mediaUrlTitle" placeholder="Nama media (opsional)">
+                <div class="modal-error" id="mediaUrlError"></div>
+                <div class="modal-actions">
+                    <button id="btnMediaUrlCancel" class="btn btn-secondary">Batal</button>
+                    <button id="btnMediaUrlConfirm" class="btn btn-primary">Tambahkan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Tambah Video YouTube atau URL Video Langsung -->
+        <div id="modalMediaVideoUrl" class="modal">
+            <div class="modal-content">
+                <h2>Tambah Video YouTube / URL</h2>
+                <p>Paste link YouTube (youtube.com / youtu.be) atau URL video langsung (.mp4/.webm).</p>
+                <input type="text" id="mediaVideoUrlInput" placeholder="https://youtube.com/watch?v=… atau https://contoh.com/video.mp4">
+                <input type="text" id="mediaVideoUrlTitle" placeholder="Nama media (opsional)">
+                <div class="modal-error" id="mediaVideoUrlError"></div>
+                <div class="modal-actions">
+                    <button id="btnMediaVideoUrlCancel" class="btn btn-secondary">Batal</button>
+                    <button id="btnMediaVideoUrlConfirm" class="btn btn-primary">Tambahkan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Halaman Pengaturan -->
+        <main id="page-settings" class="page">
+            <div class="settings-container">
+                <header class="settings-header">
+                    <h1>⚙ Pengaturan</h1>
+                    <button id="btnBackFromSettings" class="btn btn-link">← Kembali ke Permainan</button>
+                </header>
+
+                <section class="settings-section">
+                    <h2>🎨 Tema</h2>
+                    <div class="theme-presets" id="themePresets">
+                        <button class="theme-preset" data-preset="kayu" type="button">
+                            <span class="theme-swatches">
+                                <span style="background:#6b3a1a"></span>
+                                <span style="background:#ffd76b"></span>
+                                <span style="background:#2778c4"></span>
+                            </span>
+                            <span class="theme-name">🪵 Kayu Klasik</span>
+                        </button>
+                        <button class="theme-preset" data-preset="songket" type="button">
+                            <span class="theme-swatches">
+                                <span style="background:#7a1818"></span>
+                                <span style="background:#ffd76b"></span>
+                                <span style="background:#c8881e"></span>
+                            </span>
+                            <span class="theme-name">❤️ Songket Merah</span>
+                        </button>
+                        <button class="theme-preset" data-preset="malam" type="button">
+                            <span class="theme-swatches">
+                                <span style="background:#1a2b5a"></span>
+                                <span style="background:#ffd76b"></span>
+                                <span style="background:#4a9eea"></span>
+                            </span>
+                            <span class="theme-name">🌙 Malam Biru</span>
+                        </button>
+                        <button class="theme-preset" data-preset="hijau" type="button">
+                            <span class="theme-swatches">
+                                <span style="background:#1f4d2b"></span>
+                                <span style="background:#ffd76b"></span>
+                                <span style="background:#2778c4"></span>
+                            </span>
+                            <span class="theme-name">🌿 Hijau Daun</span>
+                        </button>
+                    </div>
+
+                    <div class="theme-customs">
+                        <h3>Warna Custom</h3>
+                        <div class="color-row">
+                            <label for="colorBg">Background Kayu</label>
+                            <input type="color" id="colorBg" value="#6b3a1a">
+                        </div>
+                        <div class="color-row">
+                            <label for="colorGold">Aksen Emas</label>
+                            <input type="color" id="colorGold" value="#ffd76b">
+                        </div>
+                        <div class="color-row">
+                            <label for="colorBall">Bola Angka</label>
+                            <input type="color" id="colorBall" value="#2778c4">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h2>🖼 Logo</h2>
+                    <div class="logo-controls">
+                        <div class="logo-preview" id="logoPreview">
+                            <span class="logo-placeholder">KIM</span>
+                        </div>
+                        <div class="logo-upload">
+                            <label for="logoFile" class="btn btn-secondary">📁 Pilih File…</label>
+                            <input type="file" id="logoFile" accept="image/png,image/jpeg,image/svg+xml" hidden>
+                            <button id="btnLogoReset" class="btn btn-small btn-danger">Hapus Logo</button>
+                            <p class="hint">PNG, JPG, atau SVG. Maks 500 KB.</p>
+                            <p class="error" id="logoError"></p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="settings-section">
+                    <h2>📝 Identitas</h2>
+                    <div class="form-row">
+                        <label for="settingEventName">Nama Acara:</label>
+                        <input type="text" id="settingEventName" maxlength="60" placeholder="Mis. KIM Pulau Kreatif">
+                    </div>
+                    <div class="form-row">
+                        <label for="settingEventTagline">Subjudul:</label>
+                        <input type="text" id="settingEventTagline" maxlength="60" placeholder="Kesenian Irama Minang">
+                    </div>
+                    <div class="form-row form-row-textarea">
+                        <label for="settingFooterMsg">Pesan Layar Peserta:</label>
+                        <textarea id="settingFooterMsg" maxlength="200" rows="2" placeholder="Mis. Selamat datang di Reuni 2026"></textarea>
+                    </div>
+                </section>
+
+                <div class="settings-actions">
+                    <button id="btnSettingsReset" class="btn btn-danger">↻ Reset ke Default</button>
+                    <button id="btnSettingsSave" class="btn btn-primary">💾 Simpan & Terapkan</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Halaman Generator Kupon -->
+        <main id="page-generator" class="page">
+            <div class="generator-container">
+                <header class="gen-header">
+                    <h1>Generator Kupon KIM</h1>
+                    <button id="btnBackToGame" class="btn btn-link">← Kembali ke Permainan</button>
+                </header>
+
+                <div class="gen-controls">
+                    <div class="form-row">
+                        <label>Format Kupon:</label>
+                        <select id="genFormat">
+                            <option value="5x5">5×5 (25 kotak modern)</option>
+                            <option value="9x3" selected>9×3 (27 kotak tradisional)</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label>Jumlah Set Peserta:</label>
+                        <input type="number" id="genCount" min="1" max="100" value="10">
+                        <span class="hint">(1 set = 5 kupon warna)</span>
+                    </div>
+                    <div class="form-row">
+                        <button id="btnGenerate" class="btn btn-primary">🎰 Generate Kupon</button>
+                        <button id="btnPrint" class="btn btn-secondary">🖨 Cetak / Simpan PDF</button>
+                    </div>
+                </div>
+
+                <div class="gen-preview" id="genPreview">
+                    <p class="gen-empty">Klik "Generate Kupon" untuk membuat kupon peserta.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modal Input Manual -->
+        <div id="modalManual" class="modal">
+            <div class="modal-content">
+                <h2>Input Angka Manual</h2>
+                <p>Masukkan angka yang baru diundi dari tabung (1–<span id="manualMaxLabel">90</span>):</p>
+                <input type="number" id="manualInput" min="1" placeholder="Contoh: 47">
+                <div class="modal-error" id="manualError"></div>
+                <div class="modal-actions">
+                    <button id="btnManualCancel" class="btn btn-secondary">Batal</button>
+                    <button id="btnManualConfirm" class="btn btn-primary">Tambahkan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Konfirmasi Pilih Bola -->
+        <div id="modalPick" class="modal">
+            <div class="modal-content modal-pick">
+                <h2>Konfirmasi Angka</h2>
+                <p>Tandai angka berikut sebagai sudah diundi?</p>
+                <div class="pick-preview">
+                    <div class="pick-ball" id="pickBall">
+                        <span id="pickNumber">0</span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="btnPickCancel" class="btn btn-secondary">Batal</button>
+                    <button id="btnPickConfirm" class="btn btn-primary">Ya, Tandai</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Custom Grid -->
+        <div id="modalGrid" class="modal">
+            <div class="modal-content">
+                <h2>Ukuran Grid Custom</h2>
+                <p>Tentukan kolom × baris. Total kotak = jumlah angka yang dipakai dalam permainan.</p>
+                <div class="grid-inputs">
+                    <input type="number" id="gridCols" min="2" max="30" placeholder="Kolom" value="9">
+                    <span class="grid-x">×</span>
+                    <input type="number" id="gridRows" min="2" max="30" placeholder="Baris" value="10">
+                </div>
+                <div class="grid-preview-label" id="gridPreviewLabel">Total: 90 angka (1–90)</div>
+                <div class="modal-error" id="gridError"></div>
+                <div class="modal-actions">
+                    <button id="btnGridCancel" class="btn btn-secondary">Batal</button>
+                    <button id="btnGridConfirm" class="btn btn-primary">Terapkan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Konfirmasi Reset -->
+        <div id="modalReset" class="modal">
+            <div class="modal-content">
+                <h2>Reset Ronde?</h2>
+                <p>Semua angka yang sudah diundi akan dihapus. Lanjutkan?</p>
+                <div class="modal-actions">
+                    <button id="btnResetCancel" class="btn btn-secondary">Batal</button>
+                    <button id="btnResetConfirm" class="btn btn-danger">Ya, Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
