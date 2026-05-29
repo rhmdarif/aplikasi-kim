@@ -161,33 +161,71 @@
         <!-- Halaman Layar Peserta -->
         <main id="page-peserta" class="page page-peserta">
             <div class="peserta-bg" aria-hidden="true"></div>
-            <header class="peserta-header">
-                <div class="peserta-kupon">
-                    <span class="peserta-kupon-label">KUPON</span>
-                    <span id="pesertaColorBadge" class="color-badge color-badge-putih"></span>
-                    <span id="pesertaColorText">PUTIH</span>
-                </div>
-                <div class="peserta-brand" id="pesertaBrand">KIM · Kesenian Irama Minang</div>
-                <div class="peserta-counter">
-                    <span id="pesertaCounterDrawn">0</span> / <span id="pesertaCounterTotal">90</span>
-                </div>
-            </header>
 
-            <section class="peserta-main">
+            <div class="peserta-container">
+                <!-- Kolom Kiri: brand + kupon mockup + bola terakhir + riwayat -->
+                <aside class="peserta-side">
+                    <div class="peserta-brand-block">
+                        <div class="peserta-brand-logo" id="pesertaBrandLogo">
+                            <span class="peserta-brand-text">KIM</span>
+                        </div>
+                        <div class="peserta-brand-title" id="pesertaBrand">Kesenian Irama Minang</div>
+                    </div>
+
+                    <div class="peserta-kupon-block">
+                        <div class="peserta-kupon-block-label">Kupon Saat Ini</div>
+                        <div id="pesertaKuponMock" class="peserta-kupon-mock color-putih">
+                            <div class="peserta-kupon-mock-header">
+                                <span id="pesertaColorText" class="peserta-kupon-mock-title">PUTIH</span>
+                                <span id="pesertaColorBadge" class="color-badge color-badge-putih"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="peserta-side-ball" id="pesertaSideBall">
+                        <span id="pesertaSideNumber" class="placeholder">KIM</span>
+                    </div>
+
+                    <div class="peserta-side-history">
+                        <div class="peserta-side-history-label">Riwayat</div>
+                        <div class="peserta-side-history-grid" id="pesertaHistoryList">
+                            <span class="peserta-history-empty">—</span>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Kolom Kanan: header + papan grid -->
+                <section class="peserta-board-wrap">
+                    <header class="peserta-board-header">
+                        <div class="peserta-header-kupon">
+                            <span class="peserta-header-kupon-label">Kupon Saat Ini</span>
+                            <span id="pesertaHeaderKuponIcon" class="peserta-kupon-icon color-putih" aria-hidden="true"></span>
+                            <span id="pesertaHeaderColorText" class="peserta-header-kupon-text">PUTIH</span>
+                        </div>
+                        <div class="peserta-counter">
+                            <span id="pesertaCounterDrawn">0</span> / <span id="pesertaCounterTotal">90</span>
+                        </div>
+                    </header>
+                    <div class="peserta-board" id="pesertaBoard">
+                        <!-- Angka di-generate via JS -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Overlay bola raksasa (muncul 5 detik saat angka baru) -->
+            <div id="pesertaBigOverlay" class="peserta-big-overlay" hidden aria-hidden="true">
+                <div class="peserta-showcase-top"    id="showcaseSlotTop"    hidden></div>
+                <div class="peserta-showcase-left"   id="showcaseSlotLeft"   hidden></div>
+                <div class="peserta-showcase-right"  id="showcaseSlotRight"  hidden></div>
+                <div class="peserta-showcase-bottom" id="showcaseSlotBottom" hidden></div>
                 <div class="peserta-ball" id="pesertaBall">
-                    <span id="pesertaNumber" class="placeholder">KIM</span>
+                    <span id="pesertaNumber">0</span>
                 </div>
-                <div class="peserta-waiting" id="pesertaWaiting">
-                    Menunggu undian dimulai…
-                </div>
-            </section>
+            </div>
 
-            <footer class="peserta-history">
-                <span class="peserta-history-label">Riwayat:</span>
-                <div class="peserta-history-list" id="pesertaHistoryList">
-                    <span class="peserta-history-empty">—</span>
-                </div>
-            </footer>
+            <div class="peserta-waiting" id="pesertaWaiting">
+                Menunggu undian dimulai…
+            </div>
 
             <div class="peserta-footer-msg" id="pesertaFooterMsg" hidden></div>
 
@@ -342,6 +380,29 @@
                 </section>
 
                 <section class="settings-section">
+                    <h2>📋 Papan Angka</h2>
+                    <div class="form-row">
+                        <label>Urutan angka:</label>
+                        <div class="board-order-options">
+                            <label class="board-order-option">
+                                <input type="radio" name="boardOrder" value="row">
+                                <span class="board-order-label">
+                                    <span class="board-order-name">Mendatar (Row-major)</span>
+                                    <span class="board-order-hint">1 2 3 … di baris pertama</span>
+                                </span>
+                            </label>
+                            <label class="board-order-option">
+                                <input type="radio" name="boardOrder" value="column">
+                                <span class="board-order-label">
+                                    <span class="board-order-name">Menurun (Column-major)</span>
+                                    <span class="board-order-hint">1 2 3 … di kolom pertama (tradisional KIM)</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="settings-section">
                     <h2>📝 Identitas</h2>
                     <div class="form-row">
                         <label for="settingEventName">Nama Acara:</label>
@@ -356,6 +417,46 @@
                         <textarea id="settingFooterMsg" maxlength="200" rows="2" placeholder="Mis. Selamat datang di Reuni 2026"></textarea>
                     </div>
                 </section>
+
+                <section class="settings-section">
+                    <h2>🎯 Pustaka Showcase</h2>
+                    <p class="settings-hint">
+                        Pustaka gambar yang muncul saat angka baru keluar. Tiap kali bola raksasa tampil,
+                        satu gambar dipilih acak dan ditampilkan di posisi yang Anda tentukan untuk gambar itu.
+                    </p>
+                    <div class="form-row">
+                        <label for="showcaseEnabled">Aktifkan:</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showcaseEnabled">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="showcase-actions">
+                        <label class="btn btn-primary">
+                            📁 Upload Gambar
+                            <input type="file" id="showcaseUploadFile" accept="image/png,image/jpeg,image/webp" multiple hidden>
+                        </label>
+                        <button id="btnShowcaseAddUrl" class="btn btn-secondary">🔗 Tambah URL</button>
+                    </div>
+                    <div class="showcase-items" id="showcaseItemsList">
+                        <p class="showcase-empty">Belum ada gambar di pustaka.</p>
+                    </div>
+                    <p class="settings-hint">PNG/JPG/WEBP, maks 1 MB per gambar.</p>
+                </section>
+
+                <!-- Modal: Tambah Showcase dari URL -->
+                <div id="modalShowcaseUrl" class="modal">
+                    <div class="modal-content">
+                        <h2>Tambah Gambar Showcase</h2>
+                        <p>Paste link gambar (jpg/png/webp).</p>
+                        <input type="text" id="showcaseUrlInput" placeholder="https://contoh.com/gambar.jpg">
+                        <div class="modal-error" id="showcaseUrlError"></div>
+                        <div class="modal-actions">
+                            <button id="btnShowcaseUrlCancel" class="btn btn-secondary">Batal</button>
+                            <button id="btnShowcaseUrlConfirm" class="btn btn-primary">Tambahkan</button>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="settings-actions">
                     <button id="btnSettingsReset" class="btn btn-danger">↻ Reset ke Default</button>

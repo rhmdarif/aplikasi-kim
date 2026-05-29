@@ -43,6 +43,11 @@
         eventName: 'KIM',
         eventTagline: 'Kesenian Irama Minang',
         footerMsg: '',
+        boardOrder: 'row',  // 'row' = kiri→kanan, atas→bawah; 'column' = atas→bawah, kiri→kanan
+        showcase: {
+            enabled: false,
+            items: [],  // [{ id, src, position: 'top'|'left'|'right'|'bottom' }]
+        },
     };
 
     const state = {
@@ -179,9 +184,13 @@
         // Layar peserta
         const pesertaBrand = $('pesertaBrand');
         if (pesertaBrand) {
-            const name = s.eventName || 'KIM';
-            const tag = s.eventTagline ? ` · ${s.eventTagline}` : '';
-            pesertaBrand.textContent = name + tag;
+            pesertaBrand.textContent = s.eventTagline || s.eventName || 'KIM';
+        }
+        const pesertaBrandLogo = $('pesertaBrandLogo');
+        if (pesertaBrandLogo) {
+            pesertaBrandLogo.innerHTML = s.logo
+                ? `<img src="${s.logo}" alt="Logo">`
+                : `<span class="peserta-brand-text">${(s.eventName || 'KIM').slice(0, 4)}</span>`;
         }
         const pesertaFooter = $('pesertaFooterMsg');
         if (pesertaFooter) {
@@ -202,16 +211,36 @@
         return state.grid.cols * state.grid.rows;
     }
 
+    // Return array angka per posisi visual (row-by-row di DOM).
+    // - 'row':    [1, 2, 3, 4, …] (kiri→kanan, atas→bawah)
+    // - 'column': angka di slot (r, c) = c * rows + r + 1 (atas→bawah dulu, lalu kolom berikutnya)
+    function getBoardNumbers() {
+        const { cols, rows } = state.grid;
+        const total = cols * rows;
+        const order = state.settings.boardOrder || 'row';
+        const out = new Array(total);
+        if (order === 'column') {
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    out[r * cols + c] = c * rows + r + 1;
+                }
+            }
+        } else {
+            for (let i = 0; i < total; i++) out[i] = i + 1;
+        }
+        return out;
+    }
+
     function buildBoard() {
         const board = els.board;
         const { cols, rows } = state.grid;
-        const total = totalNumbers();
         board.innerHTML = '';
         const grid = document.createElement('div');
         grid.className = 'board-grid';
         grid.style.setProperty('--cols', cols);
         grid.style.setProperty('--rows', rows);
-        for (let n = 1; n <= total; n++) {
+        const numbers = getBoardNumbers();
+        for (const n of numbers) {
             const ball = document.createElement('div');
             ball.className = 'ball';
             ball.dataset.number = String(n);
@@ -330,54 +359,226 @@
     }
 
     /* ===== Render Peserta View ===== */
-    function renderPeserta(justDrawn = null) {
-        if (!isPesertaView) return;
-        const session = currentSession();
-        const last = session.history[session.history.length - 1];
-        const nEl = $('pesertaNumber');
-        const ball = $('pesertaBall');
-        const waiting = $('pesertaWaiting');
+    const PESERTA_OVERLAY_MS = 5000;
+    let pesertaOverlayTimer = null;
+    let pesertaPendingNumber = null;  // angka baru yang sedang ditampilkan di overlay; ditahan dari kolom kiri & papan kanan
 
+    function buildPesertaBoard() {
+        const board = $('pesertaBoard');
+        if (!board) return;
+        const { cols, rows } = state.grid;
+        board.innerHTML = '';
+        const grid = document.createElement('div');
+        grid.className = 'board-grid';
+        grid.style.setProperty('--cols', cols);
+        grid.style.setProperty('--rows', rows);
+        const numbers = getBoardNumbers();
+        for (const n of numbers) {
+            const ball = document.createElement('div');
+            ball.className = 'ball';
+            ball.dataset.number = String(n);
+            ball.textContent = n;
+            grid.appendChild(ball);
+        }
+        board.appendChild(grid);
+        updatePesertaBoardSize();
+    }
+
+    function updatePesertaBoardSize() {
+        const board = $('pesertaBoard');
+        if (!board) return;
+        const grid = board.querySelector('.board-grid');
+        if (!grid) return;
+        const cs = getComputedStyle(board);
+        const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+        const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+        const w = board.clientWidth - padX;
+        const h = board.clientHeight - padY;
+        grid.style.setProperty('--avail-w', `${w}px`);
+        grid.style.setProperty('--avail-h', `${h}px`);
+    }
+
+    // Render kolom kiri (bola sedang + riwayat) berdasarkan history yang sudah difilter
+    function renderPesertaSide(historyToShow) {
+        const last = historyToShow.length ? historyToShow[historyToShow.length - 1] : null;
+        const sideNum = $('pesertaSideNumber');
         if (last == null) {
-            nEl.textContent = 'KIM';
-            nEl.classList.add('placeholder');
-            waiting?.classList.remove('hidden');
+            sideNum.textContent = 'KIM';
+            sideNum.classList.add('placeholder');
         } else {
-            nEl.textContent = String(last);
-            nEl.classList.remove('placeholder');
-            waiting?.classList.add('hidden');
+            sideNum.textContent = String(last);
+            sideNum.classList.remove('placeholder');
         }
-
-        if (justDrawn != null) {
-            ball.classList.remove('pop');
-            void ball.offsetWidth;
-            ball.classList.add('pop');
-            const flash = $('pesertaFlash');
-            if (flash) {
-                flash.classList.remove('active');
-                void flash.offsetWidth;
-                flash.classList.add('active');
-            }
-        }
-
-        $('pesertaColorText').textContent = COLOR_LABELS[state.activeColor];
-        $('pesertaColorBadge').className = `color-badge color-badge-${state.activeColor}`;
-
-        $('pesertaCounterDrawn').textContent = session.drawn.length;
-        $('pesertaCounterTotal').textContent = totalNumbers();
 
         const list = $('pesertaHistoryList');
-        const history = session.history.slice(-10).reverse();
-        if (history.length === 0) {
+        const all = historyToShow.slice().reverse();
+        if (all.length === 0) {
             list.innerHTML = '<span class="peserta-history-empty">—</span>';
         } else {
             list.innerHTML = '';
-            history.forEach((n, i) => {
+            all.forEach((n, i) => {
                 const el = document.createElement('div');
                 el.className = 'ball-mini' + (i === 0 ? ' first' : '');
                 el.textContent = n;
                 list.appendChild(el);
             });
+        }
+    }
+
+    // Render papan kanan berdasarkan set angka yang ditampilkan sebagai 'drawn'
+    function renderPesertaBoard(drawnSet) {
+        const board = $('pesertaBoard');
+        if (!board) return;
+        board.querySelectorAll('.ball').forEach(ball => {
+            const n = Number(ball.dataset.number);
+            ball.classList.toggle('drawn', drawnSet.has(n));
+        });
+    }
+
+    function renderPesertaHeader(session) {
+        $('pesertaColorText').textContent = COLOR_LABELS[state.activeColor];
+        $('pesertaColorBadge').className = `color-badge color-badge-${state.activeColor}`;
+        $('pesertaCounterDrawn').textContent = session.drawn.length;
+        $('pesertaCounterTotal').textContent = totalNumbers();
+        const mock = $('pesertaKuponMock');
+        if (mock) {
+            mock.className = `peserta-kupon-mock color-${state.activeColor}`;
+        }
+        const headerText = $('pesertaHeaderColorText');
+        if (headerText) headerText.textContent = COLOR_LABELS[state.activeColor];
+        const headerIcon = $('pesertaHeaderKuponIcon');
+        if (headerIcon) headerIcon.className = `peserta-kupon-icon color-${state.activeColor}`;
+    }
+
+    function renderPesertaWaiting(historyLength) {
+        const waiting = $('pesertaWaiting');
+        if (!waiting) return;
+        if (historyLength === 0 && !pesertaPendingNumber) {
+            waiting.classList.remove('hidden');
+        } else {
+            waiting.classList.add('hidden');
+        }
+    }
+
+    const SHOWCASE_SLOT_IDS = {
+        top: 'showcaseSlotTop',
+        left: 'showcaseSlotLeft',
+        right: 'showcaseSlotRight',
+        bottom: 'showcaseSlotBottom',
+    };
+
+    function pickRandomShowcaseItem() {
+        const sc = state.settings.showcase;
+        if (!sc || !sc.enabled || !Array.isArray(sc.items) || sc.items.length === 0) return null;
+        const valid = sc.items.filter(it =>
+            it && it.src && ['top', 'left', 'right', 'bottom'].includes(it.position)
+        );
+        if (valid.length === 0) return null;
+        return valid[Math.floor(Math.random() * valid.length)];
+    }
+
+    function renderShowcaseSlots() {
+        // Reset semua slot
+        ['top', 'left', 'right', 'bottom'].forEach(slot => {
+            const node = $(SHOWCASE_SLOT_IDS[slot]);
+            if (node) {
+                node.innerHTML = '';
+                node.hidden = true;
+            }
+        });
+        // Pilih 1 item random, tampilkan di posisinya
+        const pick = pickRandomShowcaseItem();
+        if (!pick) return;
+        const node = $(SHOWCASE_SLOT_IDS[pick.position]);
+        if (!node) return;
+        node.innerHTML = `<img src="${pick.src}" alt="">`;
+        node.hidden = false;
+    }
+
+    function showBigOverlay(number) {
+        const overlay = $('pesertaBigOverlay');
+        const ball = $('pesertaBall');
+        const nEl = $('pesertaNumber');
+        if (!overlay || !ball || !nEl) return;
+        nEl.textContent = String(number);
+        renderShowcaseSlots();
+        overlay.hidden = false;
+        overlay.classList.remove('hiding');
+        // Restart pop animation
+        ball.classList.remove('pop');
+        void ball.offsetWidth;
+        ball.classList.add('pop');
+        // Trigger flash
+        const flash = $('pesertaFlash');
+        if (flash) {
+            flash.classList.remove('active');
+            void flash.offsetWidth;
+            flash.classList.add('active');
+        }
+    }
+
+    function hideBigOverlay() {
+        const overlay = $('pesertaBigOverlay');
+        if (!overlay || overlay.hidden) return;
+        overlay.classList.add('hiding');
+        setTimeout(() => {
+            overlay.hidden = true;
+            overlay.classList.remove('hiding');
+        }, 400);
+    }
+
+    function renderPeserta(justDrawn = null) {
+        if (!isPesertaView) return;
+        const session = currentSession();
+
+        // Header (kupon/counter/warna) selalu update real-time — tidak masuk delay
+        renderPesertaHeader(session);
+
+        // Kalau ada angka baru yang masuk → mulai siklus overlay 5 detik
+        if (justDrawn != null) {
+            // Pastikan angka itu memang yang terakhir di history
+            // (kalau bukan, anggap saja state biasa)
+            const lastInHistory = session.history[session.history.length - 1];
+            if (lastInHistory === justDrawn) {
+                // Bersihkan timer sebelumnya kalau ada (mis. user spam undi)
+                if (pesertaOverlayTimer) {
+                    clearTimeout(pesertaOverlayTimer);
+                }
+
+                pesertaPendingNumber = justDrawn;
+
+                // Tampilkan kolom kiri & papan dalam STATE LAMA (tanpa angka baru ini)
+                const historyMinusLast = session.history.slice(0, -1);
+                const drawnMinusLast = new Set(session.drawn.filter(n => n !== justDrawn));
+                renderPesertaSide(historyMinusLast);
+                renderPesertaBoard(drawnMinusLast);
+                renderPesertaWaiting(historyMinusLast.length);
+
+                // Tampilkan overlay raksasa
+                showBigOverlay(justDrawn);
+
+                // Setelah 5 detik: hide overlay, render state baru
+                pesertaOverlayTimer = setTimeout(() => {
+                    pesertaPendingNumber = null;
+                    pesertaOverlayTimer = null;
+                    hideBigOverlay();
+                    const s = currentSession();
+                    renderPesertaSide(s.history);
+                    renderPesertaBoard(new Set(s.drawn));
+                    renderPesertaWaiting(s.history.length);
+                }, PESERTA_OVERLAY_MS);
+
+                return;
+            }
+        }
+
+        // State biasa (no new draw, atau dipanggil saat overlay masih aktif untuk update non-angka):
+        // - Kalau overlay masih jalan, jangan ganggu kolom kiri & papan; biarkan setTimeout yang handle.
+        // - Kalau tidak ada overlay: render normal.
+        if (pesertaPendingNumber == null) {
+            renderPesertaSide(session.history);
+            renderPesertaBoard(new Set(session.drawn));
+            renderPesertaWaiting(session.history.length);
         }
     }
 
@@ -629,11 +830,116 @@
         document.querySelectorAll('.theme-preset').forEach(p => {
             p.classList.toggle('active', p.dataset.preset === draftSettings.preset);
         });
+        const orderVal = draftSettings.boardOrder === 'column' ? 'column' : 'row';
+        document.querySelectorAll('input[name="boardOrder"]').forEach(r => {
+            r.checked = r.value === orderVal;
+        });
         const preview = $('logoPreview');
         preview.innerHTML = draftSettings.logo
             ? `<img src="${draftSettings.logo}" alt="Logo">`
             : `<span class="logo-placeholder">${(draftSettings.eventName || 'KIM').slice(0, 4)}</span>`;
         $('logoError').textContent = '';
+
+        if (!draftSettings.showcase) {
+            draftSettings.showcase = { enabled: false, items: [] };
+        }
+        if (!Array.isArray(draftSettings.showcase.items)) {
+            draftSettings.showcase.items = [];
+        }
+        $('showcaseEnabled').checked = !!draftSettings.showcase.enabled;
+        renderShowcaseItemsList();
+    }
+
+    const SHOWCASE_POSITIONS = ['top', 'left', 'right', 'bottom'];
+    const SHOWCASE_POSITION_LABELS = { top: '⬆ Atas', left: '⬅ Kiri', right: '➡ Kanan', bottom: '⬇ Bawah' };
+
+    function showcaseGenId() {
+        return 's_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
+    }
+
+    function renderShowcaseItemsList() {
+        const list = $('showcaseItemsList');
+        if (!list) return;
+        const items = (draftSettings.showcase && draftSettings.showcase.items) || [];
+        if (items.length === 0) {
+            list.innerHTML = '<p class="showcase-empty">Belum ada gambar di pustaka.</p>';
+            return;
+        }
+        list.innerHTML = '';
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'showcase-item';
+            const positionOptions = SHOWCASE_POSITIONS.map(p =>
+                `<option value="${p}"${p === item.position ? ' selected' : ''}>${SHOWCASE_POSITION_LABELS[p]}</option>`
+            ).join('');
+            card.innerHTML = `
+                <div class="showcase-item-preview"><img src="${item.src}" alt=""></div>
+                <div class="showcase-item-position">
+                    <label>Posisi:</label>
+                    <select data-id="${item.id}" class="showcase-item-position-select">${positionOptions}</select>
+                </div>
+                <button class="btn btn-small btn-danger showcase-item-delete" data-id="${item.id}">🗑 Hapus</button>
+            `;
+            list.appendChild(card);
+        });
+        list.querySelectorAll('.showcase-item-position-select').forEach(sel => {
+            sel.addEventListener('change', () => {
+                const item = draftSettings.showcase.items.find(x => x.id === sel.dataset.id);
+                if (item) item.position = sel.value;
+            });
+        });
+        list.querySelectorAll('.showcase-item-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = draftSettings.showcase.items.findIndex(x => x.id === btn.dataset.id);
+                if (idx !== -1) {
+                    draftSettings.showcase.items.splice(idx, 1);
+                    renderShowcaseItemsList();
+                }
+            });
+        });
+    }
+
+    function addShowcaseItem(src) {
+        if (!draftSettings.showcase) draftSettings.showcase = { enabled: false, items: [] };
+        if (!Array.isArray(draftSettings.showcase.items)) draftSettings.showcase.items = [];
+        draftSettings.showcase.items.push({
+            id: showcaseGenId(),
+            src,
+            position: 'top',
+        });
+        renderShowcaseItemsList();
+    }
+
+    function handleShowcaseUpload(file) {
+        if (!file) return;
+        if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
+            alert('Format harus PNG, JPG, atau WEBP.');
+            return;
+        }
+        if (file.size > 1024 * 1024) {
+            alert(`Ukuran ${(file.size/1024).toFixed(0)} KB > 1 MB. Pakai gambar lebih kecil.`);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => addShowcaseItem(reader.result);
+        reader.onerror = () => alert('Gagal membaca file.');
+        reader.readAsDataURL(file);
+    }
+
+    function openShowcaseUrlModal() {
+        $('showcaseUrlInput').value = '';
+        $('showcaseUrlError').textContent = '';
+        showModal('modalShowcaseUrl');
+        setTimeout(() => $('showcaseUrlInput').focus(), 50);
+    }
+    function confirmShowcaseUrl() {
+        const url = $('showcaseUrlInput').value.trim();
+        if (!/^https?:\/\//i.test(url)) {
+            $('showcaseUrlError').textContent = 'URL harus dimulai dengan http:// atau https://';
+            return;
+        }
+        addShowcaseItem(url);
+        hideModal('modalShowcaseUrl');
     }
 
     function previewDraft() {
@@ -677,8 +983,13 @@
     }
 
     function saveSettings() {
+        const orderChanged = (state.settings.boardOrder || 'row') !== (draftSettings.boardOrder || 'row');
         state.settings = { ...draftSettings };
         applySettings();
+        if (orderChanged && !isPesertaView) {
+            buildBoard();
+            renderAll(null, false);
+        }
         saveState();
         showPage('page-game');
     }
@@ -1380,6 +1691,31 @@
             });
         });
 
+        document.querySelectorAll('input[name="boardOrder"]').forEach(r => {
+            r.addEventListener('change', () => {
+                if (!draftSettings) return;
+                draftSettings.boardOrder = r.value === 'column' ? 'column' : 'row';
+            });
+        });
+
+        // Showcase pustaka
+        $('showcaseEnabled').addEventListener('change', () => {
+            if (!draftSettings) return;
+            if (!draftSettings.showcase) draftSettings.showcase = { enabled: false, items: [] };
+            draftSettings.showcase.enabled = $('showcaseEnabled').checked;
+        });
+        $('showcaseUploadFile').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            files.forEach(handleShowcaseUpload);
+            e.target.value = '';
+        });
+        $('btnShowcaseAddUrl').addEventListener('click', openShowcaseUrlModal);
+        $('btnShowcaseUrlCancel').addEventListener('click', () => hideModal('modalShowcaseUrl'));
+        $('btnShowcaseUrlConfirm').addEventListener('click', confirmShowcaseUrl);
+        $('showcaseUrlInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') confirmShowcaseUrl();
+        });
+
         $('logoFile').addEventListener('change', (e) => {
             if (e.target.files && e.target.files[0]) {
                 handleLogoUpload(e.target.files[0]);
@@ -1533,7 +1869,11 @@
     function applyRemoteState(remote, justDrawn) {
         if (!remote) return;
         state.activeColor = remote.activeColor || state.activeColor;
+        let gridChanged = false;
         if (remote.grid && remote.grid.cols && remote.grid.rows) {
+            if (remote.grid.cols !== state.grid.cols || remote.grid.rows !== state.grid.rows) {
+                gridChanged = true;
+            }
             state.grid = { cols: remote.grid.cols, rows: remote.grid.rows };
         }
         if (remote.sessions) {
@@ -1541,11 +1881,18 @@
                 if (remote.sessions[c]) state.sessions[c] = remote.sessions[c];
             });
         }
+        let orderChanged = false;
         if (remote.settings) {
+            const oldOrder = state.settings.boardOrder || 'row';
             state.settings = { ...DEFAULT_SETTINGS, ...remote.settings };
+            const newOrder = state.settings.boardOrder || 'row';
+            if (oldOrder !== newOrder) orderChanged = true;
             applySettings();
         }
         if (isPesertaView) {
+            if (gridChanged || orderChanged) {
+                buildPesertaBoard();
+            }
             renderPeserta(justDrawn);
         } else {
             buildBoard();
@@ -1559,7 +1906,14 @@
         showPage('page-peserta');
         loadState();
         applySettings();
+        buildPesertaBoard();
         renderPeserta(null);
+
+        window.addEventListener('resize', updatePesertaBoardSize);
+        if (typeof ResizeObserver !== 'undefined') {
+            const pb = $('pesertaBoard');
+            if (pb) new ResizeObserver(updatePesertaBoardSize).observe(pb);
+        }
 
         if (channel) {
             channel.addEventListener('message', (e) => {

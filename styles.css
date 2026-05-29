@@ -1501,6 +1501,179 @@ button:disabled {
     min-height: 18px;
 }
 
+/* Showcase Slot di Pengaturan */
+.settings-hint {
+    color: var(--tan);
+    font-size: 12px;
+    font-style: italic;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid var(--bg-accent);
+    border-radius: 26px;
+    transition: background 0.2s;
+}
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--cream);
+    transition: transform 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--gold-dark);
+    border-color: var(--gold);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(24px);
+    background: var(--gold);
+}
+.showcase-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+.showcase-actions label.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.showcase-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.showcase-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--tan);
+    font-style: italic;
+    padding: 20px;
+}
+.showcase-item {
+    background: rgba(0,0,0,0.25);
+    border: 2px solid var(--bg-accent);
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.showcase-item-preview {
+    aspect-ratio: 16 / 9;
+    background: rgba(0,0,0,0.5);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.showcase-item-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.showcase-item-position {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px;
+    align-items: center;
+    font-size: 12px;
+}
+.showcase-item-position label {
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+    min-width: auto;
+}
+.showcase-item-position select {
+    padding: 4px 6px;
+    background: var(--cream);
+    color: var(--text-on-light);
+    border: 1px solid var(--bg-accent);
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+    font-weight: 600;
+}
+.showcase-item-delete {
+    padding: 4px 8px;
+    font-size: 11px;
+    align-self: flex-end;
+}
+
+/* Board order radios */
+.board-order-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+.board-order-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.2);
+    border: 2px solid var(--bg-accent);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.1s, border-color 0.1s;
+}
+.board-order-option:hover {
+    background: rgba(255,255,255,0.05);
+}
+.board-order-option:has(input:checked) {
+    border-color: var(--gold);
+    background: rgba(255,215,107,0.1);
+}
+.board-order-option input[type="radio"] {
+    accent-color: var(--gold);
+    width: 18px;
+    height: 18px;
+}
+.board-order-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.board-order-name {
+    color: var(--cream);
+    font-weight: 700;
+    font-size: 14px;
+}
+.board-order-hint {
+    color: var(--tan);
+    font-size: 12px;
+    font-style: italic;
+}
+
 /* Identitas */
 .form-row-textarea {
     align-items: flex-start;
@@ -1553,10 +1726,9 @@ button:disabled {
     height: 100dvh;
     overflow: hidden;
     color: #fff5e1;
-    flex-direction: column;
 }
 .page-peserta.active {
-    display: flex;
+    display: block;
 }
 
 /* Background pattern Minang (CSS art) — bisa diganti gambar nanti */
@@ -1603,73 +1775,463 @@ button:disabled {
     right: -80px;
 }
 
-/* Header peserta */
-.peserta-header {
+/* Container 2 kolom */
+.peserta-container {
     position: relative;
     z-index: 2;
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 20px;
-    padding: 18px 36px;
-    background: linear-gradient(180deg, rgba(43,24,16,0.95), rgba(43,24,16,0.7));
-    border-bottom: 3px solid #6b3a1a;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-}
-.peserta-kupon {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-weight: 900;
-    font-size: clamp(18px, 2.2vmin, 32px);
-    letter-spacing: 2px;
-    justify-self: start;
-}
-.peserta-kupon-label {
-    color: #ffd76b;
-}
-#pesertaColorText {
-    color: #fff;
-}
-.peserta-kupon .color-badge {
-    width: clamp(20px, 2.5vmin, 36px);
-    height: clamp(20px, 2.5vmin, 36px);
-}
-.peserta-brand {
-    font-size: clamp(14px, 1.6vmin, 22px);
-    color: #ffd76b;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    opacity: 0.85;
-    text-align: center;
-}
-.peserta-counter {
-    justify-self: end;
-    font-weight: 900;
-    font-size: clamp(18px, 2.2vmin, 32px);
-    color: #fff;
-    background: rgba(0,0,0,0.4);
-    padding: 6px 18px;
-    border-radius: 8px;
-    border: 2px solid rgba(255,215,107,0.4);
-    letter-spacing: 1px;
+    grid-template-columns: minmax(280px, 28%) 1fr;
+    gap: 16px;
+    padding: 16px;
+    height: 100vh;
+    height: 100dvh;
 }
 
-/* Main area: bola raksasa */
-.peserta-main {
-    position: relative;
-    z-index: 2;
-    flex: 1;
+
+/* ===== Kolom Kiri ===== */
+.peserta-side {
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2)),
+        repeating-linear-gradient(
+            85deg,
+            var(--bg-accent) 0px,
+            var(--bg-accent-light) 3px,
+            var(--bg-accent-dark) 5px,
+            var(--bg-accent) 8px
+        );
+    border: 3px solid var(--border-dark);
+    border-radius: 12px;
+    box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        inset 0 -3px 6px rgba(0,0,0,0.4),
+        0 4px 12px rgba(0,0,0,0.5);
+    padding: clamp(16px, 2vmin, 24px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 2.5vmin, 28px);
+    min-height: 0;
+}
+
+/* Brand block (mirip operator) */
+.peserta-brand-block {
+    text-align: center;
+}
+.peserta-brand-logo {
+    width: clamp(60px, 8vmin, 90px);
+    height: clamp(60px, 8vmin, 90px);
+    border-radius: 50%;
+    margin: 0 auto 6px;
+    background: radial-gradient(circle at 30% 30%, var(--gold), var(--gold-dark) 60%, var(--gold-deep));
+    border: 3px solid var(--border-dark);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 -3px 6px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+.peserta-brand-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.peserta-brand-text {
+    font-weight: 900;
+    font-size: clamp(18px, 2.4vmin, 28px);
+    color: var(--bg-base);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+}
+.peserta-brand-title {
+    font-size: clamp(11px, 1.4vmin, 16px);
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Bola sedang (angka terakhir) di kolom kiri */
+.peserta-side-ball {
+    align-self: center;
+    width: clamp(140px, 18vmin, 220px);
+    height: clamp(140px, 18vmin, 220px);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 30% 25%, var(--ball-blue-light) 0%, var(--ball-blue) 45%, var(--ball-blue-dark) 100%);
+    border: clamp(4px, 0.8vmin, 8px) solid var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        inset -8px -12px 24px rgba(0,0,0,0.4),
+        inset 8px 8px 24px rgba(255,255,255,0.3),
+        0 8px 24px rgba(0,0,0,0.6);
+}
+#pesertaSideNumber {
+    font-size: clamp(56px, 9vmin, 110px);
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 3px 0 rgba(0,0,0,0.5), 0 0 16px rgba(255,255,255,0.4);
+    font-family: 'Arial Black', sans-serif;
+    line-height: 1;
+}
+#pesertaSideNumber.placeholder {
+    font-size: clamp(32px, 5vmin, 60px);
+    letter-spacing: 3px;
+    opacity: 0.8;
+}
+
+/* Riwayat (10 terakhir, bola mini bundar, grid 2 kolom) */
+.peserta-side-history {
+    flex: 1;
+    min-height: 0;
+    background: rgba(0,0,0,0.3);
+    border: 2px solid var(--border-dark);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.peserta-side-history-label {
+    font-size: clamp(10px, 1.2vmin, 13px);
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.peserta-side-history-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: clamp(3px, 0.6vmin, 6px);
+    align-content: start;
+    justify-items: center;
+    overflow: hidden;
+}
+.peserta-side-history-grid .ball-mini {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, #6ec5ff 0%, #2778c4 50%, #0b3d7a 100%);
+    border: clamp(1.5px, 0.3vmin, 2.5px) solid var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: clamp(11px, 2.2vmin, 22px);
+    color: #fff;
+    font-family: 'Arial Black', sans-serif;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+    box-shadow:
+        inset -2px -3px 6px rgba(0,0,0,0.4),
+        inset 2px 2px 6px rgba(255,255,255,0.25),
+        0 2px 3px rgba(0,0,0,0.4);
+}
+.peserta-history-empty {
+    color: var(--tan);
+    font-style: italic;
+    font-size: clamp(12px, 1.4vmin, 16px);
+    grid-column: span 2;
+    text-align: center;
+    padding: 16px 0;
+}
+
+/* ===== Kolom Kanan: Papan Grid ===== */
+.peserta-board-wrap {
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2)),
+        repeating-linear-gradient(
+            85deg,
+            var(--bg-accent) 0px,
+            var(--bg-accent-light) 3px,
+            var(--bg-accent-dark) 5px,
+            var(--bg-accent) 8px
+        );
+    border: 3px solid var(--border-dark);
+    border-radius: 12px;
+    box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        inset 0 -3px 6px rgba(0,0,0,0.4),
+        0 4px 12px rgba(0,0,0,0.5);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     min-height: 0;
 }
+.peserta-board-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    background: linear-gradient(180deg, #2a1206, #3d1e0a);
+    border: 2px solid #f8f4e8;
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: #fff5e1;
+    flex-shrink: 0;
+}
+/* Kupon mockup di panel kiri peserta */
+.peserta-kupon-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.peserta-kupon-block-label {
+    font-size: clamp(10px, 1.2vmin, 13px);
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    text-align: center;
+}
+.peserta-kupon-mock {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 3px solid;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    min-width: clamp(120px, 14vmin, 180px);
+    width: 100%;
+    transition: background 0.2s, border-color 0.2s;
+}
+.peserta-kupon-mock.color-merah  { background: #ffe8e8; border-color: #c01818; color: #2b1810; }
+.peserta-kupon-mock.color-biru   { background: #e8efff; border-color: #1b58c8; color: #2b1810; }
+.peserta-kupon-mock.color-putih  { background: #ffffff; border-color: #888;    color: #2b1810; }
+.peserta-kupon-mock.color-kuning { background: #fff7d6; border-color: #c8981e; color: #2b1810; }
+.peserta-kupon-mock.color-hijau  { background: #e8ffe8; border-color: #1c8a1c; color: #2b1810; }
+
+.peserta-kupon-mock-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-weight: 900;
+    font-size: clamp(11px, 1.4vmin, 16px);
+    letter-spacing: 1.5px;
+}
+.peserta-kupon-mock-title {
+    color: inherit;
+}
+.peserta-kupon-mock .color-badge {
+    width: clamp(14px, 1.6vmin, 20px);
+    height: clamp(14px, 1.6vmin, 20px);
+    box-shadow:
+        inset -2px -3px 5px rgba(0,0,0,0.35),
+        inset 2px 2px 4px rgba(255,255,255,0.35),
+        0 0 0 1px rgba(0,0,0,0.3);
+}
+.peserta-kupon-mock-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+}
+.peserta-kupon-mock-grid span {
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 2px;
+    text-align: center;
+    font-weight: 700;
+    font-size: clamp(8px, 1vmin, 11px);
+    padding: 1px 0;
+    color: #2b1810;
+}
+.peserta-board-header .peserta-counter {
+    margin-left: auto;
+    font-weight: 900;
+    font-size: clamp(14px, 1.8vmin, 22px);
+    color: #fff;
+    background: rgba(0,0,0,0.4);
+    padding: 4px 14px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,215,107,0.3);
+    letter-spacing: 1px;
+}
+.peserta-header-kupon {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 12px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 6px;
+    border: 1px solid rgba(255,215,107,0.3);
+}
+.peserta-header-kupon-label {
+    color: var(--gold);
+    font-weight: 700;
+    font-size: clamp(10px, 1.2vmin, 14px);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+.peserta-kupon-icon {
+    width: clamp(20px, 2.4vmin, 30px);
+    height: clamp(14px, 1.8vmin, 22px);
+    border-radius: 3px;
+    border: 2px solid;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    flex-shrink: 0;
+    position: relative;
+    display: inline-block;
+}
+.peserta-kupon-icon::before,
+.peserta-kupon-icon::after {
+    content: '';
+    position: absolute;
+    left: 15%;
+    right: 15%;
+    height: 1.5px;
+    background: rgba(0,0,0,0.45);
+    border-radius: 1px;
+}
+.peserta-kupon-icon::before { top: 28%; }
+.peserta-kupon-icon::after  { bottom: 28%; }
+.peserta-kupon-icon.color-merah  { background: #ffe8e8; border-color: #c01818; }
+.peserta-kupon-icon.color-biru   { background: #e8efff; border-color: #1b58c8; }
+.peserta-kupon-icon.color-putih  { background: #ffffff; border-color: #888;    }
+.peserta-kupon-icon.color-kuning { background: #fff7d6; border-color: #c8981e; }
+.peserta-kupon-icon.color-hijau  { background: #e8ffe8; border-color: #1c8a1c; }
+.peserta-header-kupon-text {
+    color: #fff;
+    font-weight: 900;
+    font-size: clamp(14px, 1.8vmin, 22px);
+    letter-spacing: 2px;
+}
+.peserta-board {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(4px, 1vmin, 12px);
+    background: rgba(0,0,0,0.25);
+    border: 2px solid var(--border-dark);
+    border-radius: 8px;
+    overflow: hidden;
+    --gap: clamp(2px, 0.6vmin, 8px);
+}
+.peserta-board .board-grid {
+    display: grid;
+    gap: var(--gap);
+    grid-template-columns: repeat(var(--cols, 9), var(--ball-size, 1fr));
+    grid-template-rows: repeat(var(--rows, 10), var(--ball-size, 1fr));
+    --ball-size: min(
+        calc((var(--avail-w, 100%) - (var(--cols, 9) - 1) * var(--gap)) / var(--cols, 9)),
+        calc((var(--avail-h, 100%) - (var(--rows, 10) - 1) * var(--gap)) / var(--rows, 10))
+    );
+}
+/* Bola di papan peserta: read-only (tidak ada hover scale, tidak ada cursor pointer) */
+.peserta-board .ball {
+    cursor: default;
+}
+.peserta-board .ball:hover:not(.drawn) {
+    transform: none;
+    filter: none;
+    box-shadow:
+        inset -3px -4px 8px rgba(0,0,0,0.4),
+        inset 3px 3px 8px rgba(255,255,255,0.25),
+        0 2px 4px rgba(0,0,0,0.4);
+}
+.peserta-board .ball.drawn {
+    cursor: default;
+}
+
+/* ===== Overlay Bola Raksasa (saat angka baru, 5 detik) ===== */
+.peserta-big-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, rgba(43,24,16,0.85) 0%, rgba(26,13,5,0.95) 80%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: bigOverlayIn 0.3s ease-out;
+}
+.peserta-showcase-top,
+.peserta-showcase-bottom,
+.peserta-showcase-left,
+.peserta-showcase-right {
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+.peserta-showcase-top {
+    top: clamp(8px, 2vh, 32px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(80vw, 1000px);
+    height: clamp(60px, 12vh, 140px);
+}
+.peserta-showcase-bottom {
+    bottom: clamp(8px, 2vh, 32px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(80vw, 1000px);
+    height: clamp(60px, 12vh, 140px);
+}
+/* Slot kiri: tepi kanan slot tepat di pinggir kiri bola raksasa.
+   Radius bola = setengah width = min(35vmin, calc((100vh - 80px) / 2)). */
+.peserta-showcase-left {
+    right: calc(50% + min(35vmin, calc((100vh - 80px) / 2)));
+    top: 50%;
+    transform: translateY(-50%);
+    width: calc(50% - min(35vmin, calc((100vh - 80px) / 2)));
+    height: min(60vh, 600px);
+    justify-content: flex-end;
+}
+.peserta-showcase-right {
+    left: calc(50% + min(35vmin, calc((100vh - 80px) / 2)));
+    top: 50%;
+    transform: translateY(-50%);
+    width: calc(50% - min(35vmin, calc((100vh - 80px) / 2)));
+    height: min(60vh, 600px);
+    justify-content: flex-start;
+}
+.peserta-showcase-top img,
+.peserta-showcase-bottom img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+.peserta-showcase-left img,
+.peserta-showcase-right img {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+.peserta-showcase-top[hidden],
+.peserta-showcase-bottom[hidden],
+.peserta-showcase-left[hidden],
+.peserta-showcase-right[hidden] {
+    display: none !important;
+}
+.peserta-big-overlay[hidden] {
+    display: none !important;
+}
+.peserta-big-overlay.hiding {
+    animation: bigOverlayOut 0.4s ease-in forwards;
+}
+@keyframes bigOverlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes bigOverlayOut {
+    to { opacity: 0; }
+}
+
 .peserta-ball {
-    width: min(70vmin, calc(100vh - 240px));
-    height: min(70vmin, calc(100vh - 240px));
+    width: min(70vmin, calc(100vh - 80px));
+    height: min(70vmin, calc(100vh - 80px));
     border-radius: 50%;
     background:
         radial-gradient(circle at 30% 25%, #8ed4ff 0%, #2778c4 45%, #0b3d7a 100%);
@@ -1681,8 +2243,7 @@ button:disabled {
         inset -16px -22px 48px rgba(0,0,0,0.45),
         inset 16px 16px 48px rgba(255,255,255,0.3),
         0 16px 56px rgba(0,0,0,0.7),
-        0 0 80px rgba(255,215,107,0.2);
-    transition: transform 0.3s;
+        0 0 80px rgba(255,215,107,0.3);
     position: relative;
 }
 .peserta-ball.pop {
@@ -1705,87 +2266,29 @@ button:disabled {
     font-family: 'Arial Black', sans-serif;
     line-height: 1;
 }
-#pesertaNumber.placeholder {
-    font-size: clamp(60px, 16vmin, 200px);
-    letter-spacing: 6px;
-    opacity: 0.75;
-}
+
+/* Waiting message saat belum ada undian */
 .peserta-waiting {
-    position: absolute;
-    bottom: 12%;
+    position: fixed;
+    bottom: 6%;
     left: 50%;
     transform: translateX(-50%);
-    color: #ffd76b;
-    font-size: clamp(16px, 2vmin, 28px);
+    z-index: 5;
+    color: var(--gold);
+    font-size: clamp(14px, 1.8vmin, 24px);
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
     text-shadow: 0 2px 8px rgba(0,0,0,0.8);
-    animation: pulse 2s ease-in-out infinite;
+    animation: waitingPulse 2s ease-in-out infinite;
     pointer-events: none;
 }
-@keyframes pulse {
+@keyframes waitingPulse {
     0%, 100% { opacity: 0.5; }
     50%      { opacity: 1; }
 }
 .peserta-waiting.hidden {
     display: none;
-}
-
-/* Strip riwayat */
-.peserta-history {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 36px;
-    background: linear-gradient(0deg, rgba(43,24,16,0.95), rgba(43,24,16,0.7));
-    border-top: 3px solid #6b3a1a;
-    box-shadow: 0 -4px 16px rgba(0,0,0,0.4);
-}
-.peserta-history-label {
-    font-size: clamp(14px, 1.6vmin, 22px);
-    color: #ffd76b;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    flex-shrink: 0;
-}
-.peserta-history-list {
-    display: flex;
-    gap: clamp(8px, 1.4vmin, 20px);
-    align-items: center;
-    flex-wrap: nowrap;
-    overflow: hidden;
-    flex: 1;
-}
-.peserta-history-list .ball-mini {
-    --mini-size: clamp(40px, 6vmin, 80px);
-    width: var(--mini-size);
-    height: var(--mini-size);
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 25%, #6ec5ff 0%, #2778c4 50%, #0b3d7a 100%);
-    border: 3px solid #f8f4e8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: calc(var(--mini-size) * 0.42);
-    color: #fff;
-    font-family: 'Arial Black', sans-serif;
-    text-shadow: 0 2px 0 rgba(0,0,0,0.5);
-    box-shadow: inset -3px -4px 8px rgba(0,0,0,0.4), inset 3px 3px 8px rgba(255,255,255,0.25), 0 3px 6px rgba(0,0,0,0.4);
-    flex-shrink: 0;
-}
-.peserta-history-list .ball-mini.first {
-    background: radial-gradient(circle at 30% 25%, #ffd76b 0%, #c8881e 50%, #8a5a10 100%);
-    transform: scale(1.15);
-}
-.peserta-history-empty {
-    color: #d4a373;
-    font-style: italic;
-    font-size: clamp(14px, 1.6vmin, 22px);
 }
 
 /* Footer message kustom di layar peserta */
@@ -2065,26 +2568,49 @@ button:disabled {
 
 /* Layar Peserta: scaled-down untuk mobile landscape */
 @media (orientation: landscape) and (max-height: 500px) {
-    .peserta-header {
-        padding: 8px 14px;
+    .peserta-container {
+        grid-template-columns: minmax(180px, 26%) 1fr;
+        gap: 6px;
+        padding: 6px;
     }
-    .peserta-history {
-        padding: 6px 14px;
+    .peserta-side {
+        padding: 8px;
+        gap: 10px;
     }
-    .peserta-main {
+    .peserta-board-wrap {
         padding: 8px;
     }
+    .peserta-board-header {
+        padding: 4px 8px;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+    .peserta-brand-logo {
+        width: 44px;
+        height: 44px;
+    }
+    .peserta-side-ball {
+        width: 90px;
+        height: 90px;
+        border-width: 4px;
+    }
+    #pesertaSideNumber {
+        font-size: 38px;
+    }
+    #pesertaSideNumber.placeholder {
+        font-size: 22px;
+    }
+    .peserta-side-history-grid .ball-mini {
+        font-size: 11px;
+        border-width: 1.5px;
+    }
     .peserta-ball {
-        width: min(60vmin, calc(100vh - 110px));
-        height: min(60vmin, calc(100vh - 110px));
+        width: min(70vmin, calc(100vh - 40px));
+        height: min(70vmin, calc(100vh - 40px));
         border-width: 5px;
     }
     .peserta-waiting {
-        bottom: 8%;
-        font-size: 12px;
-    }
-    .peserta-history-list .ball-mini {
-        --mini-size: clamp(28px, 7vmin, 50px);
-        border-width: 2px;
+        bottom: 4%;
+        font-size: 11px;
     }
 }
